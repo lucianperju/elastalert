@@ -25,10 +25,12 @@ from staticconf.loader import yaml_loader
 from texttable import Texttable
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client as TwilioClient
+
 from util import EAException
 from util import elastalert_logger
 from util import lookup_es_key
 from util import pretty_ts
+from util import StructuredMessage
 
 
 class DateTimeEncoder(json.JSONEncoder):
@@ -298,19 +300,20 @@ class StompAlerter(Alerter):
         fullmessage = {}
         for match in matches:
             if qk in match:
-                elastalert_logger.info(
-                    'Alert for %s, %s at %s:' % (self.rule['name'], match[qk], lookup_es_key(match, self.rule['timestamp_field'])))
+                log_data = 'Alert for %s, %s at %s:' % (self.rule['name'], match[qk], lookup_es_key(match, self.rule['timestamp_field']))
+                elastalert_logger.info(StructuredMessage(data=log_data, alert_id=self.rule['name']))
                 alerts.append(
                     '1)Alert for %s, %s at %s:' % (self.rule['name'], match[qk], lookup_es_key(match, self.rule['timestamp_field']))
                 )
                 fullmessage['match'] = match[qk]
             else:
-                elastalert_logger.info('Alert for %s at %s:' % (self.rule['name'], lookup_es_key(match, self.rule['timestamp_field'])))
+                log_data = 'Alert for %s at %s:' % (self.rule['name'], lookup_es_key(match, self.rule['timestamp_field']))
+                elastalert_logger.info(StructuredMessage(data=log_data, alert_id=self.rule['name']))
                 alerts.append(
                     '2)Alert for %s at %s:' % (self.rule['name'], lookup_es_key(match, self.rule['timestamp_field']))
                 )
                 fullmessage['match'] = lookup_es_key(match, self.rule['timestamp_field'])
-            elastalert_logger.info(unicode(BasicMatchString(self.rule, match)))
+            elastalert_logger.info(StructuredMessage(data=unicode(BasicMatchString(self.rule, match))))
 
         fullmessage['alerts'] = alerts
         fullmessage['rule'] = self.rule['name']
@@ -342,11 +345,12 @@ class DebugAlerter(Alerter):
         qk = self.rule.get('query_key', None)
         for match in matches:
             if qk in match:
-                elastalert_logger.info(
-                    'Alert for %s, %s at %s:' % (self.rule['name'], match[qk], lookup_es_key(match, self.rule['timestamp_field'])))
+                log_data = 'Alert for %s, %s at %s:' % (self.rule['name'], match[qk], lookup_es_key(match, self.rule['timestamp_field']))
+                elastalert_logger.info(StructuredMessage(data=log_data, alert_id=self.rule['name']))
             else:
-                elastalert_logger.info('Alert for %s at %s:' % (self.rule['name'], lookup_es_key(match, self.rule['timestamp_field'])))
-            elastalert_logger.info(unicode(BasicMatchString(self.rule, match)))
+                log_data = 'Alert for %s at %s:' % (self.rule['name'], lookup_es_key(match, self.rule['timestamp_field']))
+                elastalert_logger.info(StructuredMessage(data=log_data, alert_id=self.rule['name']))
+            elastalert_logger.info(StructuredMessage(data=unicode(BasicMatchString(self.rule, match))))
 
     def get_info(self):
         return {'type': 'debug'}

@@ -2,6 +2,7 @@
 import os
 import datetime
 import logging
+import json
 
 import dateutil.parser
 import dateutil.tz
@@ -10,9 +11,17 @@ from elasticsearch import RequestsHttpConnection
 from elasticsearch.client import Elasticsearch
 from six import string_types
 
-logging.basicConfig()
+logging.basicConfig(format='%(message)s')
 elastalert_logger = logging.getLogger('elastalert')
 
+
+
+class StructuredMessage(object):
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
+    def __str__(self):
+        return json.dumps(self.kwargs)
 
 def new_get_event_ts(ts_field):
     """ Constructs a lambda that may be called to extract the timestamp field
