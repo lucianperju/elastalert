@@ -632,7 +632,7 @@ class ElastAlerter():
                     log_data = "Found expired previous run for %s at %s" % (rule['name'], endtime)
                     elastalert_logger.info(StructuredMessage(data=log_data,
                                                              alert_id=rule['name'],
-                                                             endtime=endtime))
+                                                             endtime=str(endtime)))
                     return None
         except (ElasticsearchException, KeyError) as e:
             self.handle_error('Error querying for last run: %s' % (e), {'rule': rule['name']})
@@ -1084,8 +1084,8 @@ class ElastAlerter():
                                                         self.thread_data.num_hits, self.thread_data.num_dupes, num_matches,
                                                         self.thread_data.alerts_sent)
 
-            elastalert_logger.info(StructuredMessage(data=log_data, alert_id=rule['name'], old_starttime=old_starttime,
-                                                     endtime=pretty_ts(endtime, rule.get('use_local_time')),
+            elastalert_logger.info(StructuredMessage(data=log_data, alert_id=rule['name'], old_starttime=str(old_starttime),
+                                                     endtime=str(pretty_ts(endtime, rule.get('use_local_time'))),
                                                      hits=self.thread_data.num_hits,
                                                      already_seen=self.thread_data.num_dupes,
                                                      num_matches=num_matches,
@@ -1541,7 +1541,7 @@ class ElastAlerter():
                         alert_time)
                 elastalert_logger.info(StructuredMessage(data=log_data, alert_id=rule['name'], agg_id=agg_id,
                                        aggregation_key_value=aggregation_key_value,
-                                       alert_time=alert_time))
+                                       alert_time=str(alert_time)))
             else:
                 # First match, set alert_time
                 alert_time = ''
@@ -1563,8 +1563,7 @@ class ElastAlerter():
                 agg_id = None
                 log_data = 'New aggregation for %s, aggregation_key: %s. next alert at %s.' % (rule['name'], aggregation_key_value, alert_time)
                 elastalert_logger.info(StructuredMessage(data=log_data, alert_id=rule['name'],
-                                                         aggregation_key_value=aggregation_key_value,
-                                                         alert_time=alert_time))
+                                                         aggregation_key_value=aggregation_key_value))
         else:
             # Already pending aggregation, use existing alert_time
             alert_time = rule['aggregate_alert_time'].get(aggregation_key_value)
@@ -1575,8 +1574,8 @@ class ElastAlerter():
                     agg_id,
                     aggregation_key_value,
                     alert_time)
-            elastalert_logger.info(StructuredMessage(data=log_data, alert_id=rule['name'],agg_id=agg_id,alert_time=alert_time,
-                                  aggregation_key_value=aggregation_key_value))
+            elastalert_logger.info(StructuredMessage(data=log_data, alert_id=rule['name'], agg_id=agg_id,
+                                                     aggregation_key_value=aggregation_key_value))
         alert_body = self.get_alert_body(match, rule, False, alert_time)
         if agg_id:
             alert_body['aggregate_id'] = agg_id
